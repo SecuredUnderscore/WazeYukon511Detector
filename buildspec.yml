@@ -16,5 +16,5 @@ phases:
   post_build:
     commands:
       - echo "Updating lambda Function..."
-      - aws lambda update-function-code --function-name VanIsle511Feed --zip-file fileb://deployment_package.zip
+      - aws lambda update-function-code --function-name WazeYukon511Detector --zip-file fileb://deployment_package.zip
       - echo "DONE!!"
