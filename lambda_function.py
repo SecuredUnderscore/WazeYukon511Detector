@@ -107,7 +107,7 @@ async def send_webhook(event):
         embed = discord.Embed(title=f"New Yukon511 Closure")
         embed.add_field(name="Road", value=event['street'])
 
-        embed.add_field(name="Links", value=f"https://www.waze.com/en-US/editor?env=usa&lat={event['causeAlert']['location']['y']}&lon={event['causeAlert']['location']['x']}&zoomLevel=16&segments={event['id']}")
+        embed.add_field(name="Links", value=f"https://www.waze.com/en-US/editor?env=usa&lat={event['causeAlert']['location']['y']}&lon={event['causeAlert']['location']['x']}&zoomLevel=16&segments={event['segments'][0]['ID']}")
         webhook = discord.Webhook.from_url(discord_webhook_url, session=session)
         await webhook.send(embed=embed)
 
