@@ -31,41 +31,18 @@ async def start():
     global table_active
     table_active = dynamodb.Table(database_name_active)
 
-
-
-    try:
-        api = requests.get(feed_url)
-    except ConnectionError:
-        await send_log("Unable to connect to api")
-        return
-
-    print(api.status_code)
-    if api.status_code != 200:
-        await send_log(f"API Response Code {api.status_code}")
-        return
-
-    try:
-        api2 = requests.get(feed_url2)
-    except ConnectionError:
-        await send_log("Unable to connect to api")
-        return
-
-    print(api.status_code)
-    if api.status_code != 200:
-        await send_log(f"API Response Code {api.status_code}")
-        return
-
-
-
     uuids2: dict = table_active.scan()['Items']
     for uuid in uuids2:
         uuids.append(uuid.get('uuid'))
 
-    parsed_api = api.json()
-    parsed_api2 = api2.json()
-
-    await check_for_yukon(parsed_api)
-    await check_for_yukon(parsed_api2)
+    await do_full_api_check(-128.4, -122.6, 51.0, 48.0)
+    await do_full_api_check(-122.6, -116.8, 51.0, 48.0)
+    await do_full_api_check(-128.4, -122.6, 54.0, 51.0)
+    await do_full_api_check(-122.6, -116.8, 54.0, 51.0)
+    await do_full_api_check(-128.4, -122.6, 57.0, 54.0)
+    await do_full_api_check(-122.6, -116.8, 57.0, 54.0)
+    await do_full_api_check(-128.4, -122.6, 60.0, 57.0)
+    await do_full_api_check(-122.6, -116.8, 60.0, 57.0)
 
     # for uuid in uuids:
     #     print(f"Removing {uuid}")
@@ -73,13 +50,36 @@ async def start():
 
     await send_log("Script Completed")
 
+async def do_full_api_check(left, right, top, bottom):
+    try:
+        url = f"https://www.waze.com/live-map/api/georss?env=na&types=traffic&left={left}&top={top}&right={right}&bottom={bottom}"
+        print(f"Loading {url}")
+        api = requests.get(url)
+    except ConnectionError:
+        await send_log("Unable to connect to api")
+        return
+
+    print(api.status_code)
+    if api.status_code != 200:
+        await send_log(f"API Response Code {api.status_code}")
+        return
+
+    parsed_api = api.json()
+    await check_for_yukon(parsed_api)
+
 async def check_for_yukon(parsed_api):
-    for event in parsed_api['jams']:
+    try:
+        jams = parsed_api['jams']
+    except KeyError:
+        return
+
+    for event in jams:
         try:
             uuid = str(event['causeAlert']['id'])
             reporter = event['causeAlert']['reportBy']
 
-            if reporter == 'Yukon 511':
+            if reporter == "Yukon 511":
+                print(f"Found Yukon 511 for {uuid}")
                 if not uuid in uuids:
                     print(f"Adding {uuid}")
                     table_active.put_item(Item={'uuid': str(uuid)})
