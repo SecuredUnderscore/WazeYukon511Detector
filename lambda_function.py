@@ -1,4 +1,5 @@
 import asyncio
+import time
 import discord
 import aiohttp
 import requests
@@ -207,6 +208,14 @@ def update_s3_geojson(new_alerts):
     # Create a dict for faster lookup by ID
     existing_features = {f['properties']['id']: f for f in geojson_data.get('features', []) if 'properties' in f and 'id' in f['properties']}
     
+    current_time = int(time.time() * 1000)
+    new_alert_ids = set(a.get('id') for a in new_alerts if a.get('id'))
+
+    for feature_id, feature in existing_features.items():
+        if feature_id not in new_alert_ids:
+            if 'expired' not in feature['properties']:
+                feature['properties']['expired'] = current_time
+
     updated_count = 0
     new_count = 0
     
