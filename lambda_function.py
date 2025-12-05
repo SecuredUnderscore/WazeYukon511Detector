@@ -48,15 +48,15 @@ async def start():
     for uuid in uuids2:
         uuids.append(uuid.get('uuid'))
 
-    # await do_full_api_check(-122.333, -122.308, 37.934, 37.915)
-    # await do_full_api_check(-128.4, -122.6, 51.0, 48.0)
-    # await do_full_api_check(-122.6, -116.8, 51.0, 48.0)
-    # await do_full_api_check(-128.4, -122.6, 54.0, 51.0)
-    # await do_full_api_check(-122.6, -116.8, 54.0, 51.0)
-    # await do_full_api_check(-128.4, -122.6, 57.0, 54.0)
-    # await do_full_api_check(-122.6, -116.8, 57.0, 54.0)
-    # await do_full_api_check(-128.4, -122.6, 60.0, 57.0)
-    # await do_full_api_check(-122.6, -116.8, 60.0, 57.0)
+    await do_full_api_check(-122.333, -122.308, 37.934, 37.915, False)
+    await do_full_api_check(-128.4, -122.6, 51.0, 48.0, False)
+    await do_full_api_check(-122.6, -116.8, 51.0, 48.0, False)
+    await do_full_api_check(-128.4, -122.6, 54.0, 51.0, False)
+    await do_full_api_check(-122.6, -116.8, 54.0, 51.0, False)
+    await do_full_api_check(-128.4, -122.6, 57.0, 54.0, False)
+    await do_full_api_check(-122.6, -116.8, 57.0, 54.0, False)
+    await do_full_api_check(-128.4, -122.6, 60.0, 57.0, False)
+    await do_full_api_check(-122.6, -116.8, 60.0, 57.0, False)
 
     # South Island
     await do_full_api_check(-124.6, -123.3, 48.3, 49.0)
@@ -80,7 +80,7 @@ async def start():
 
     await send_log("Script Completed")
 
-async def do_full_api_check(left, right, top, bottom):
+async def do_full_api_check(left, right, top, bottom, alert=True):
     try:
         url = f"https://www.waze.com/live-map/api/georss?env=na&format=1&types=traffic,alerts&acotu=true&left={left}&top={top}&right={right}&bottom={bottom}"
         print(f"Loading {url}")
@@ -100,7 +100,8 @@ async def do_full_api_check(left, right, top, bottom):
     if 'alerts' in parsed_api:
         collected_alerts.extend(parsed_api['alerts'])
     print(parsed_api)
-    await check_for_yukon(parsed_api)
+    if alert:
+        await check_for_yukon(parsed_api)
 
 async def check_for_yukon(parsed_api):
     try:
